@@ -1,14 +1,19 @@
 import streamlit as st
 
+# Initialize session state
+if "page" not in st.session_state:
+    st.session_state.page = "Home"
+
 # Page setup
 st.set_page_config(page_title="FastFoodie 🍔", layout="centered")
 
-# Navigation
+# Sidebar Navigation
 menu = ["Home", "Menu", "Order", "Contact"]
-choice = st.sidebar.selectbox("Navigate", menu)
+choice = st.sidebar.selectbox("Navigate", menu, index=menu.index(st.session_state.page))
+st.session_state.page = choice
 
-# Home Page
-if choice == "Home":
+# ---------------- HOME PAGE ----------------
+if st.session_state.page == "Home":
     st.markdown(
         """
         <style>
@@ -64,11 +69,13 @@ if choice == "Home":
     st.markdown("---")
 
     st.markdown("### 🎉 Order now and get 10% off your first meal!")
-    st.button("Go to Menu")
 
+    if st.button("Go to Menu"):
+        st.session_state.page = "Menu"
+        st.rerun()
 
-# Menu Page
-elif choice == "Menu":
+# ---------------- MENU PAGE ----------------
+elif st.session_state.page == "Menu":
     st.title("📋 Our Menu")
     st.image("images/french-fries.jpg", width=250, caption="Crispy Fries")
     st.write("**Fries** - $2.49")
@@ -89,9 +96,8 @@ elif choice == "Menu":
     st.image("images/strawberry-mojito.jpg", width=250, caption="Strawberry Mojito")
     st.write("**Strawberry Mojito** - $3.49")
 
-
-# Order Page
-elif choice == "Order":
+# ---------------- ORDER PAGE ----------------
+elif st.session_state.page == "Order":
     st.title("🛒 Place Your Order")
     st.write("Fill in your order details below:")
 
@@ -104,8 +110,8 @@ elif choice == "Order":
         if submit:
             st.success(f"Thank you {name}, your order of {quantity} {food}(s) has been placed!")
 
-# Contact Page
-elif choice == "Contact":
+# ---------------- CONTACT PAGE ----------------
+elif st.session_state.page == "Contact":
     st.title("📞 Contact Us")
     st.write("We're happy to hear from you!")
     st.text_input("Your Name")
@@ -113,3 +119,20 @@ elif choice == "Contact":
     st.text_area("Message")
     if st.button("Send"):
         st.success("Thanks! We'll get back to you soon.")
+# ---------------- FOOTER ----------------
+st.markdown("---")
+st.markdown(
+    """
+    <style>
+    footer {
+        text-align: center;
+        padding: 20px;
+        background-color: #FFDE59;
+        color: #D62828;
+        font-family: 'Comic Sans MS', cursive;
+    }
+    </style>
+    """,
+    unsafe_allow_html=True
+)
+st.markdown("<footer>© 2023 FastFoodie Express. All rights reserved.</footer>", unsafe_allow_html=True)
