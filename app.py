@@ -3,6 +3,8 @@ import streamlit as st
 # Initialize session state
 if "page" not in st.session_state:
     st.session_state.page = "Home"
+if "cart" not in st.session_state:
+    st.session_state.cart = {}
 
 # Page setup
 st.set_page_config(page_title="FastFoodie 🍔", layout="centered")
@@ -77,38 +79,51 @@ if st.session_state.page == "Home":
 # ---------------- MENU PAGE ----------------
 elif st.session_state.page == "Menu":
     st.title("📋 Our Menu")
-    st.image("images/french-fries.jpg", width=250, caption="Crispy Fries")
-    st.write("**Fries** - $2.49")
-    st.image("images/beef-burger.jpg", width=250, caption="Juicy Burger")
-    st.write("**Burger** - $5.99")
-    st.image("images/fresh-juice.jpg", width=250, caption="Fresh Juice")
-    st.write("**Fresh Juice** - $1.99")
-    st.image("images/soda.jpg", width=250, caption="Soda")
-    st.write("**Soda** - $1.49")
-    st.image("images/chocolate-frappuccino-table.jpg", width=250, caption="Chocolate Frappuccino")
-    st.write("**Chocolate Frappuccino** - $3.99")
-    st.image("images/milkshake-set-table.jpg", width=250, caption="Milkshake")
-    st.write("**Milkshake** - $2.99")
-    st.image("images/shwarma.jpg", width=250, caption="Shawarma")
-    st.write("**Shawarma** - $4.99")
-    st.image("images/pepperoni-pizza-slice.jpg", width=250, caption="Pepperoni Pizza")
-    st.write("**Pepperoni Pizza** - $6.99")
-    st.image("images/strawberry-mojito.jpg", width=250, caption="Strawberry Mojito")
-    st.write("**Strawberry Mojito** - $3.49")
+
+    menu_items = [
+        {"name": "Fries", "price": 2.49, "image": "images/french-fries.jpg"},
+        {"name": "Burger", "price": 5.99, "image": "images/beef-burger.jpg"},
+        {"name": "Juice", "price": 1.99, "image": "images/fresh-juice.jpg"},
+        {"name": "Soda", "price": 1.49, "image": "images/soda.jpg"},
+        {"name": "Frappuccino", "price": 3.99, "image": "images/chocolate-frappuccino-table.jpg"},
+        {"name": "Milkshake", "price": 2.99, "image": "images/milkshake-set-table.jpg"},
+        {"name": "Shawarma", "price": 4.99, "image": "images/shwarma.jpg"},
+        {"name": "Pizza", "price": 6.99, "image": "images/pepperoni-pizza-slice.jpg"},
+        {"name": "Mojito", "price": 3.49, "image": "images/strawberry-mojito.jpg"},
+    ]
+
+    for item in menu_items:
+        st.image(item["image"], width=250, caption=item["name"])
+        st.write(f"**{item['name']}** - ${item['price']:.2f}")
+        if st.button(f"Add {item['name']} to cart", key=f"{item['name']}_button"):
+            if item["name"] in st.session_state.cart:
+                st.session_state.cart[item["name"]]["quantity"] += 1
+            else:
+                st.session_state.cart[item["name"]] = {"price": item["price"], "quantity": 1}
+            st.success(f"{item['name']} added to cart!")
 
 # ---------------- ORDER PAGE ----------------
 elif st.session_state.page == "Order":
-    st.title("🛒 Place Your Order")
-    st.write("Fill in your order details below:")
+    st.title("🛒 Your Cart")
 
-    with st.form("order_form"):
-        name = st.text_input("Name")
-        food = st.selectbox("Select Item", ["Burger", "Fries", "Soda"])
-        quantity = st.number_input("Quantity", 1, 10)
-        submit = st.form_submit_button("Order Now")
+    if st.session_state.cart:
+        total = 0
+        for item, details in st.session_state.cart.items():
+            st.write(f"{item} - ${details['price']:.2f} x {details['quantity']}")
+            total += details["price"] * details["quantity"]
+        st.write(f"**Total: ${total:.2f}**")
+        st.markdown("---")
+        st.write("Fill in your order details below:")
 
-        if submit:
-            st.success(f"Thank you {name}, your order of {quantity} {food}(s) has been placed!")
+        with st.form("order_form"):
+            name = st.text_input("Name")
+            submit = st.form_submit_button("Place Order")
+
+            if submit:
+                st.success(f"Thank you {name}, your order has been placed!")
+                st.session_state.cart = {}  # Clear the cart after order
+    else:
+        st.write("Your cart is empty. Go to the Menu to add items.")
 
 # ---------------- CONTACT PAGE ----------------
 elif st.session_state.page == "Contact":
@@ -119,6 +134,7 @@ elif st.session_state.page == "Contact":
     st.text_area("Message")
     if st.button("Send"):
         st.success("Thanks! We'll get back to you soon.")
+
 # ---------------- FOOTER ----------------
 st.markdown("---")
 st.markdown(
